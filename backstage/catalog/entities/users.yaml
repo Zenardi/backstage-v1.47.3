@@ -1,0 +1,14 @@
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: Zenardi # Github Username
+spec:
+  profile:
+    displayName: Eduardo Zenardi
+    email: du.zenardi@gmail.com
+    picture: https://api.dicebear.com/7.x/avataaars/svg?seed=Leo&backgroundColor=transparent
+  memberOf:
+    - development
+    - sre
+    - zenardi-org
+    - platform-engineering

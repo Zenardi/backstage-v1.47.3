@@ -1,0 +1,8 @@
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: rocketman
+  description: Rocketman Project
+spec:
+  owner: group:default/platform-engineering
+  domain: spacetech

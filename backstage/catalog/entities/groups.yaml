@@ -1,0 +1,59 @@
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: zenardi-org
+  description: The Zenardi Organization
+spec:
+  type: organization
+  profile:
+    displayName: Zenardi Inc
+  children:
+    - development
+    - sre
+  members:
+    - Zenardi
+
+---
+
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: development
+  description: Development Team
+spec:
+  type: team
+  profile:
+    displayName: Development Team
+  children: []
+  members:
+    - Zenardi
+
+---
+
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: sre
+  description: SRE Team
+spec:
+  type: team
+  profile:
+    displayName: SRE Team
+  children: []
+  members:
+    - Zenardi
+
+---
+
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: platform-engineering
+  description: Platform Engineering Team
+spec:
+  type: team
+  profile:
+    displayName: Platform Engineering Team
+  children: []
+  members:
+    - Zenardi

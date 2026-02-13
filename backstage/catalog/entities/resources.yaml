@@ -1,0 +1,20 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: kind-backstage
+  annotations:
+    kubernetes.io/api-server: 'https://kubernetes.default.svc.cluster.local'
+    kubernetes.io/api-server-certificate-authority: '${K8S_CONFIG_CA_DATA}'
+    kubernetes.io/auth-provider: 'serviceAccount'
+    kubernetes.io/skip-metrics-lookup: 'true'
+    backstage.io/view-url: 'https://backstage.local/kubernetes'
+    description: 'KIND Backstage cluster for development'
+  labels:
+    environment: development
+    type: kubernetes-cluster
+    region: local
+spec:
+  type: kubernetes-cluster
+  owner: group:default/platform-engineering
+  title: KIND Backstage Cluster
+  description: Development Kubernetes cluster running in KIND

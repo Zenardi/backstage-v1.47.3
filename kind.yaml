@@ -1,6 +1,6 @@
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
-name: linuxtips
+name: Backstage
 nodes:
 - role: control-plane
 - role: worker
@@ -11,4 +11,4 @@ nodes:
     name: node-02
 
 # kind create cluster --config kind.yaml
-# kind delete cluster --name linuxtips
+# kind delete cluster --name backstage
