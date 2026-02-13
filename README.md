@@ -2,15 +2,22 @@
 Backstage v1.47.3
 
 
+## Configuration Files
+
+app-config.local.yaml
+
 ```yaml
 # app-config.local.yaml
 # Backstage override configuration for your local development environment
 app:
   title: Zenardi Corp. IdP
-  baseUrl: http://localhost:3000
+  baseUrl: https://refactored-space-waddle-697pjwvwgrfrgv6-3000.app.github.dev
+  listen:
+    host: 0.0.0.0
 
 organization:
   name: Zenardi Corp
+
 
 catalog:
   rules:
@@ -82,4 +89,30 @@ catalog:
       target: https://github.com/Zenardi/backstage-software-templates/blob/main/crossplane/aws/cluster-provider-config/template.yaml
       rules:
         - allow: [ Template ]
+
+auth:
+  environment: production
+  providers:
+    github:
+      production:
+        clientId: ${AUTH_GITHUB_CLIENT_ID}
+        clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+        ## uncomment if using GitHub Enterprise
+        # enterpriseInstanceUrl: ${AUTH_GITHUB_ENTERPRISE_INSTANCE_URL}
+        signIn:
+          resolvers:
+            # Matches the GitHub username with the Backstage user entity name.
+            # See https://backstage.io/docs/auth/github/provider#resolvers for more resolvers.
+            - resolver: usernameMatchingUserEntityName
+```
+
+Environment file
+
+```sh
+export AUTH_GITHUB_CLIENT_ID=xxx
+export AUTH_GITHUB_CLIENT_SECRET=xxx
+export GITHUB_TOKEN=xxx
+
+# Development server configuration for Codespaces
+export HOST=0.0.0.0
 ```
