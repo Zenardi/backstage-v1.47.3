@@ -52,6 +52,10 @@ import {
 
 import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
+import {
+  EntityInfraWalletCard,
+  isInfraWalletAvailable,
+} from '@electrolux-oss/plugin-infrawallet';
 
 import {
   EntityKubernetesContent,
@@ -140,6 +144,14 @@ const overviewContent = (
     <Grid item md={8} xs={12}>
       <EntityHasSubcomponentsCard variant="gridItem" />
     </Grid>
+
+    <EntitySwitch>
+      <EntitySwitch.Case if={isInfraWalletAvailable}>
+        <Grid item md={6}>
+          <EntityInfraWalletCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
   </Grid>
 );
 

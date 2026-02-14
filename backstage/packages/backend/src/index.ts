@@ -64,4 +64,7 @@ backend.add(import('@backstage/plugin-kubernetes-backend'));
 backend.add(import('@backstage/plugin-notifications-backend'));
 backend.add(import('@backstage/plugin-signals-backend'));
 
+// InfraWallet backend
+backend.add(import('@electrolux-oss/plugin-infrawallet-backend'));
+
 backend.start();

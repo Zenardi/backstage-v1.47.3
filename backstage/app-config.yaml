@@ -32,6 +32,21 @@ backend:
     connection: ':memory:'
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
 
+  infraWallet:
+    integrations:
+      azure:
+        - name: zenardi-azure-account
+          subscriptionId: ${INFRAWALLET_AZURE_SUBSCRIPTION_ID}
+          tenantId: ${INFRAWALLET_AZURE_TENANT_ID}
+          clientId: ${INFRAWALLET_AZURE_CLIENT_ID}
+          clientSecret: ${INFRAWALLET_AZURE_CLIENT_SECRET}
+      aws:
+        - name: zenardi-aws-account
+          accountId: '${INFRAWALLET_AWS_ACCOUNT_ID}'
+          assumedRoleName: ${INFRAWALLET_AWS_ASSUMED_ROLE_NAME}
+          accessKeyId: ${INFRAWALLET_AWS_ACCESS_KEY_ID}
+          secretAccessKey: ${INFRAWALLET_AWS_SECRET_ACCESS_KEY}
+
 integrations:
   github:
     - host: github.com

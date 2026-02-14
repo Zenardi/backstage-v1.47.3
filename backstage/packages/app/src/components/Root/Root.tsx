@@ -6,6 +6,7 @@ import LibraryBooks from '@material-ui/icons/LibraryBooks';
 import CreateComponentIcon from '@material-ui/icons/AddCircleOutline';
 import TrackChangesIcon from '@material-ui/icons/TrackChanges';
 import MoneyIcon from '@material-ui/icons/MonetizationOn';
+import { InfraWalletIcon } from '@electrolux-oss/plugin-infrawallet';
 import LogoFull from './LogoFull';
 import LogoIcon from './LogoIcon';
 import {
@@ -80,6 +81,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
         <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
         <SidebarItem icon={TrackChangesIcon} to="tech-radar" text="Tech Radar" />
         <SidebarItem icon={MoneyIcon} to="cost-insights" text="Cost Insights" />
+        <SidebarItem icon={InfraWalletIcon} to="infrawallet" text="InfraWallet" />
         {/* End global nav */}
         <SidebarDivider />
         <SidebarScrollWrapper>
