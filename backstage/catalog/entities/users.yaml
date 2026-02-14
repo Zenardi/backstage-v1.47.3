@@ -12,3 +12,20 @@ spec:
     - sre
     - zenardi-org
     - platform-engineering
+
+---
+
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: zenardi-azure
+spec:
+  profile:
+    displayName: Eduardo Zenardi
+    email: du.zenardi@live.com
+    picture: https://api.dicebear.com/7.x/avataaars/svg?seed=Leo&backgroundColor=transparent
+  memberOf:
+    - development
+    - sre
+    - zenardi-org
+    - platform-engineering
