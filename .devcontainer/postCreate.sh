@@ -213,9 +213,9 @@ EOF
 fi
 
 # Create a default kind cluster if Docker is available and no cluster exists
-if command -v docker >/dev/null 2>&1; then
-  if ! kind get clusters >/dev/null 2>&1 || ! kind get clusters | grep -q '^kind$'; then
-    kind create cluster --config kind.yaml
-  fi
-fi
+# if command -v docker >/dev/null 2>&1; then
+#   if ! kind get clusters >/dev/null 2>&1 || ! kind get clusters | grep -q '^kind$'; then
+#     kind create cluster --config kind.yaml
+#   fi
+# fi
 
