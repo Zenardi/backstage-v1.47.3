@@ -36,6 +36,15 @@ Backstage Version: v1.47.3
       - [Summary](#summary-1)
   - [Catalog Integration (Optional)](#catalog-integration-optional)
   - [Files Modified](#files-modified)
+- [Docker Deployment](#docker-deployment)
+  - [Overview](#overview-2)
+  - [Multi-Stage Dockerfile](#multi-stage-dockerfile)
+    - [Stage 1 — packages](#stage-1--packages)
+    - [Stage 2 — build](#stage-2--build)
+    - [Stage 3 — final (Chainguard)](#stage-3--final-chainguard)
+  - [Building the Image](#building-the-image)
+  - [Running the Container](#running-the-container)
+  - [Files](#files)
 - [Codespace Development](#codespace-development)
 
 
@@ -632,6 +641,109 @@ When multiple annotations are present, the fetched cost data will match **all** 
 | `packages/app/src/components/catalog/EntityPage.tsx` | Added `EntityInfraWalletCard` to entity overview |
 | `packages/backend/src/index.ts` | Registered `@electrolux-oss/plugin-infrawallet-backend` |
 | `app-config.yaml` | Added `backend.infraWallet.integrations` for Azure and AWS |
+
+
+# Docker Deployment
+
+## Overview
+
+This project includes a **multi-stage Dockerfile** at the repository root (`backstage/Dockerfile`) that builds the entire Backstage backend inside Docker — no host-side build steps are required.
+
+The final stage uses the [Chainguard Node image](https://images.chainguard.dev/directory/image/node/overview) (`cgr.dev/chainguard/node:latest`), a distroless-style image with **near-zero known CVEs**, significantly reducing the attack surface compared to standard Debian/Alpine-based Node images.
+
+Reference: [Backstage Docker Deployment Docs](https://backstage.io/docs/deployment/docker/)
+
+## Multi-Stage Dockerfile
+
+The Dockerfile uses three stages:
+
+### Stage 1 — `packages`
+
+- Base: `node:24-trixie-slim`
+- Copies the monorepo and strips everything except `package.json` files
+- Creates a minimal skeleton used for dependency caching in the next stage
+
+### Stage 2 — `build`
+
+- Base: `node:24-trixie-slim`
+- Installs native build dependencies (`python3`, `g++`, `build-essential`, `libsqlite3-dev`)
+- Runs `yarn install --immutable` using the skeleton from Stage 1
+- Copies the full source code
+- Runs `yarn tsc` (type-check) and `yarn --cwd packages/backend build`
+- Produces `skeleton.tar.gz` and `bundle.tar.gz` in `packages/backend/dist/`
+
+### Stage 3 — `final` (Chainguard)
+
+- Base: `cgr.dev/chainguard/node:latest`
+- Copies `skeleton.tar.gz` → runs `yarn workspaces focus --all --production` (production-only deps)
+- Copies `bundle.tar.gz` (compiled backend code)
+- Copies `app-config.yaml` and `app-config.production.yaml`
+- Runs as non-root user (Chainguard default)
+- Exposes port `7007`
+
+> [!NOTE]
+> The Chainguard image is **distroless** — it has no shell, no `apt-get`, and no unnecessary system packages. This makes it unsuitable for debugging but excellent for production security. All native modules are compiled in Stage 2 and carried over as pre-built artifacts.
+
+## Building the Image
+
+From the `backstage/` directory:
+
+```bash
+docker build -t backstage .
+```
+
+Or from the repository root:
+
+```bash
+docker build -t backstage ./backstage
+```
+
+> [!TIP]
+> Ensure Docker BuildKit is enabled for the build cache mounts to work:
+> ```bash
+> export DOCKER_BUILDKIT=1
+> ```
+
+## Running the Container
+
+```bash
+docker run -p 7007:7007 \
+  -e GITHUB_TOKEN=$GITHUB_TOKEN \
+  -e AUTH_GITHUB_CLIENT_ID=$AUTH_GITHUB_CLIENT_ID \
+  -e AUTH_GITHUB_CLIENT_SECRET=$AUTH_GITHUB_CLIENT_SECRET \
+  -e INFRAWALLET_AZURE_SUBSCRIPTION_ID=$INFRAWALLET_AZURE_SUBSCRIPTION_ID \
+  -e INFRAWALLET_AZURE_TENANT_ID=$INFRAWALLET_AZURE_TENANT_ID \
+  -e INFRAWALLET_AZURE_CLIENT_ID=$INFRAWALLET_AZURE_CLIENT_ID \
+  -e INFRAWALLET_AZURE_CLIENT_SECRET=$INFRAWALLET_AZURE_CLIENT_SECRET \
+  -e INFRAWALLET_AWS_ACCOUNT_ID=$INFRAWALLET_AWS_ACCOUNT_ID \
+  -e INFRAWALLET_AWS_ASSUMED_ROLE_NAME=$INFRAWALLET_AWS_ASSUMED_ROLE_NAME \
+  -e INFRAWALLET_AWS_ACCESS_KEY_ID=$INFRAWALLET_AWS_ACCESS_KEY_ID \
+  -e INFRAWALLET_AWS_SECRET_ACCESS_KEY=$INFRAWALLET_AWS_SECRET_ACCESS_KEY \
+  backstage
+```
+
+Or using an env file:
+
+```bash
+docker run -p 7007:7007 --env-file .env backstage
+```
+
+> [!WARNING]
+> The `app-config.production.yaml` sets `baseUrl` to `http://localhost:7007`. For production deployments, override this through environment variables or mount a custom config file:
+> ```bash
+> docker run -p 7007:7007 \
+>   -v $(pwd)/app-config.production.yaml:/app/app-config.production.yaml \
+>   --env-file .env \
+>   backstage
+> ```
+
+## Files
+
+| File | Description |
+|---|---|
+| `backstage/Dockerfile` | Multi-stage Dockerfile (Chainguard final image) |
+| `backstage/packages/backend/Dockerfile` | Original single-stage Dockerfile (host-build approach) |
+| `backstage/.dockerignore` | Excludes `.git`, `node_modules`, `*.local.yaml`, etc. |
 
 
 # Codespace Development
