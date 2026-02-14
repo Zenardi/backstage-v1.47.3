@@ -204,6 +204,11 @@ if [ -f "$HOME/.zshrc" ] && ! grep -q "^alias k='kubectl'$" "$HOME/.zshrc"; then
   echo "alias k='kubectl'" >> "$HOME/.zshrc"
 fi
 
+# Set Docker API version to match host daemon
+if [ -f "$HOME/.zshrc" ] && ! grep -q "^export DOCKER_API_VERSION=" "$HOME/.zshrc"; then
+  echo "export DOCKER_API_VERSION=1.43" >> "$HOME/.zshrc"
+fi
+
 # Enable kubectl autocompletion for zsh (including alias k)
 if [ -f "$HOME/.zshrc" ] && ! grep -q "kubectl completion zsh" "$HOME/.zshrc"; then
   cat >> "$HOME/.zshrc" <<'EOF'
