@@ -4,24 +4,34 @@ Backstage v1.47.3
 
 ## Configuration Files
 
-app-config.local.yaml
+app-config.local.yaml - GitHub Codespace
 
 ```yaml
 # app-config.local.yaml
 # Backstage override configuration for your local development environment
 app:
   title: Zenardi Corp. IdP
-  baseUrl: https://refactored-space-waddle-697pjwvwgrfrgv6-3000.app.github.dev
+  baseUrl: http://localhost:3000
   listen:
     host: 0.0.0.0
+    port: 3000
+
+backend:
+  baseUrl: https://special-train-g45w4pv9vjq3wqj-7007.app.github.dev
+  listen:
+    port: 7007
+    host: 0.0.0.0
+  cors:
+    origin: https://special-train-g45w4pv9vjq3wqj-3000.app.github.dev
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
 
 organization:
   name: Zenardi Corp
 
-
 catalog:
   rules:
-    - allow: [Component, System, API, Resource, Location]
+    - allow: [Component, System, API, Resource, Location, Template, User, Group, Domain]
   locations:
     # Local example data, file locations are relative to the backend process, typically `packages/backend`
 
@@ -91,18 +101,16 @@ catalog:
         - allow: [ Template ]
 
 auth:
-  environment: production
+  environment: development
+  experimentalExtraAllowedOrigins:
+    - 'https://*.app.github.dev'
   providers:
     github:
-      production:
+      development:
         clientId: ${AUTH_GITHUB_CLIENT_ID}
         clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
-        ## uncomment if using GitHub Enterprise
-        # enterpriseInstanceUrl: ${AUTH_GITHUB_ENTERPRISE_INSTANCE_URL}
         signIn:
           resolvers:
-            # Matches the GitHub username with the Backstage user entity name.
-            # See https://backstage.io/docs/auth/github/provider#resolvers for more resolvers.
             - resolver: usernameMatchingUserEntityName
 ```
 
