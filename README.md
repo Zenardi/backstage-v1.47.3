@@ -29,6 +29,13 @@ backend:
 organization:
   name: Zenardi Corp
 
+techdocs:
+  builder: 'local'
+  generator:
+    runIn: 'local'
+  publisher:
+    type: 'local'
+
 catalog:
   rules:
     - allow: [Component, System, API, Resource, Location, Template, User, Group, Domain]
