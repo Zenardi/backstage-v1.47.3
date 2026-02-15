@@ -1,19 +1,18 @@
 app:
-  # Should be the same as backend.baseUrl when using the `app-backend` plugin.
-  baseUrl: http://localhost:7007
+  title: Zenardi Corp. IdP
+  baseUrl: ${APP_BASE_URL}
 
 backend:
-  # Note that the baseUrl should be the URL that the browser and other clients
-  # should use when communicating with the backend, i.e. it needs to be
-  # reachable not just from within the backend host, but from all of your
-  # callers. When its value is "http://localhost:7007", it's strictly private
-  # and can't be reached by others.
-  baseUrl: http://localhost:7007
-  # The listener can also be expressed as a single <host>:<port> string. In this case we bind to
-  # all interfaces, the most permissive setting. The right value depends on your specific deployment.
-  listen: ':7007'
-
-  # config options: https://node-postgres.com/apis/client
+  baseUrl: ${BACKEND_BASE_URL}
+  listen:
+    port: ${PORT}
+  auth:
+    keys:
+      - secret: ${BACKEND_SECRET}
+  cors:
+    origin: ${APP_BASE_URL}
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
   database:
     client: pg
     connection:
@@ -21,35 +20,133 @@ backend:
       port: ${POSTGRES_PORT}
       user: ${POSTGRES_USER}
       password: ${POSTGRES_PASSWORD}
-      # https://node-postgres.com/features/ssl
-      # you can set the sslmode configuration option via the `PGSSLMODE` environment variable
-      # see https://www.postgresql.org/docs/current/libpq-ssl.html Table 33.1. SSL Mode Descriptions (e.g. require)
-      # ssl:
-      #   ca: # if you have a CA file and want to verify it you can uncomment this section
-      #     $file: <file-path>/ca/server.crt
 
-auth:
-  providers:
-    guest: {}
+organization:
+  name: Zenardi Corp
+
+techdocs:
+  builder: 'local'
+  generator:
+    runIn: 'local'
+  publisher:
+    type: 'local'
 
 catalog:
-  # Overrides the default list locations from app-config.yaml as these contain example data.
-  # See https://backstage.io/docs/features/software-catalog/#adding-components-to-the-catalog for more details
-  # on how to get entities into the catalog.
+  rules:
+    - allow: [Component, System, API, Resource, Location, Template, User, Group, Domain]
   locations:
-    # Local example data, replace this with your production config, these are intended for demo use only.
-    # File locations are relative to the backend process, typically in a deployed context, such as in a Docker container, this will be the root
-    - type: file
-      target: ./examples/entities.yaml
+    # Use URLs in production to avoid container filesystem coupling
 
-    # Local example template
-    - type: file
-      target: ./examples/template/template.yaml
+    - type: url
+      target: https://github.com/Zenardi/backstage-v1.47.3/blob/main/backstage/catalog/entities/resources.yaml
+      rules:
+        - allow: [ Resource ]
+
+    - type: url
+      target: https://github.com/Zenardi/backstage-v1.47.3/blob/main/backstage/catalog/entities/users.yaml
+      rules:
+        - allow: [ User ]
+
+    - type: url
+      target: https://github.com/Zenardi/backstage-v1.47.3/blob/main/backstage/catalog/entities/groups.yaml
+      rules:
+        - allow: [ Group ]
+
+    - type: url
+      target: https://github.com/Zenardi/backstage-v1.47.3/blob/main/backstage/catalog/entities/systems.yaml
+      rules:
+        - allow: [ System ]
+
+    - type: url
+      target: https://github.com/Zenardi/backstage-v1.47.3/blob/main/backstage/catalog/entities/domains.yaml
+      rules:
+        - allow: [ Domain ]
+
+    - type: url
+      target: https://github.com/Zenardi/backstage-software-templates/blob/main/python-app/template.yaml
       rules:
         - allow: [Template]
 
-    # Local example organizational data
-    - type: file
-      target: ./examples/org.yaml
+    - type: url
+      target: https://github.com/Zenardi/backstage-software-templates/blob/main/react-ts-app/template.yaml
       rules:
-        - allow: [User, Group]
+        - allow: [ Template ]
+
+    - type: url
+      target: https://github.com/Zenardi/backstage-software-templates/blob/main/crossplane/aws/s3/template.yaml
+      rules:
+        - allow: [ Template ]
+
+    - type: url
+      target: https://github.com/Zenardi/backstage-software-templates/blob/main/springboot-grpc-template/template.yaml
+      rules:
+        - allow: [ Template ]
+
+    - type: url
+      target: https://github.com/Zenardi/backstage-software-templates/blob/main/crossplane/aws/eks/template.yaml
+      rules:
+        - allow: [ Template ]
+
+    - type: url
+      target: https://github.com/Zenardi/backstage-software-templates/blob/main/springboot-api/template.yaml
+      rules:
+        - allow: [ Template ]
+
+    - type: url
+      target: https://github.com/Zenardi/backstage-software-templates/blob/main/crossplane/aws/ecr/template.yaml
+      rules:
+        - allow: [ Template ]
+
+    - type: url
+      target: https://github.com/Zenardi/backstage-software-templates/blob/main/crossplane/aws/cluster-provider-config/template.yaml
+      rules:
+        - allow: [ Template ]
+
+auth:
+  environment: production
+  providers:
+    github:
+      production:
+        clientId: ${AUTH_GITHUB_CLIENT_ID}
+        clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+        signIn:
+          resolvers:
+            - resolver: usernameMatchingUserEntityName
+    microsoft:
+      production:
+        clientId: ${AUTH_MICROSOFT_CLIENT_ID}
+        clientSecret: ${AUTH_MICROSOFT_CLIENT_SECRET}
+        tenantId: ${AUTH_MICROSOFT_TENANT_ID}
+        signIn:
+          resolvers:
+            - resolver: userIdMatchingUserEntityAnnotation
+
+costInsights:
+  engineerCost: 200000
+  products:
+    computeEngine:
+      name: Compute Engine
+      icon: compute
+    cloudStorage:
+      name: Cloud Storage
+      icon: storage
+    bigQuery:
+      name: BigQuery
+      icon: search
+  metrics:
+    DAU:
+      name: Daily Active Users
+      default: true
+    MSC:
+      name: Monthly Subscribers
+
+integrations:
+  github:
+    - host: github.com
+      token: ${GITHUB_TOKEN}
+  azure:
+    - host: dev.azure.com
+      credentials:
+        - clientId: ${AZURE_APP_REGISTRATION_CLIENT_ID}
+          managedIdentityClientId: ${AZURE_MANAGED_IDENTITY_CLIENT_ID}
+          tenantId: ${AZURE_TENANT_ID}

@@ -68,6 +68,7 @@ COPY --chown=node:node . .
 # yarn build:backend produces skeleton.tar.gz and bundle.tar.gz in packages/backend/dist/
 RUN yarn tsc
 RUN yarn --cwd packages/backend build
+RUN yarn workspaces focus --all --production && rm -rf "$(yarn cache clean)"
 
 # ---------------------------------------------------------------------------
 # Stage 3 - final: Production image using Chainguard (minimal CVEs)
@@ -76,22 +77,12 @@ FROM cgr.dev/chainguard/node:latest
 
 WORKDIR /app
 
-# Copy the skeleton tarball and install production-only dependencies
-COPY --from=build --chown=node:node /app/yarn.lock /app/package.json /app/packages/backend/dist/skeleton.tar.gz ./
-RUN tar xzf skeleton.tar.gz && rm skeleton.tar.gz
-
-COPY --from=build --chown=node:node /app/.yarn ./.yarn
-COPY --from=build --chown=node:node /app/.yarnrc.yml ./
-COPY --from=build --chown=node:node /app/backstage.json ./
+# Copy the focused production dependencies from the build stage
+COPY --from=build --chown=node:node /app/node_modules ./node_modules
+COPY --from=build --chown=node:node /app/package.json /app/yarn.lock /app/backstage.json ./
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--no-node-snapshot"
-
-# Chainguard Node image doesn't provide a global `yarn` binary, so execute the
-# project-local Yarn release dynamically to stay compatible across Yarn upgrades.
-RUN YARN_RELEASE="$(find .yarn/releases -maxdepth 1 -type f -name 'yarn-*.cjs' | sort | head -n 1)" \
-    && test -n "$YARN_RELEASE" \
-    && node "$YARN_RELEASE" workspaces focus --all --production
 
 # Copy the built backend bundle
 COPY --from=build --chown=node:node /app/packages/backend/dist/bundle.tar.gz ./
