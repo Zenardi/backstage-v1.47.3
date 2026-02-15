@@ -1,0 +1,148 @@
+app:
+  title: Zenardi Corp. IdP
+  baseUrl: http://localhost:3000
+  listen:
+    host: 0.0.0.0
+    port: 3000
+
+backend:
+  baseUrl: https://probable-xylophone-5g4pg976jgrh7q4-7007.app.github.dev
+  listen:
+    port: 7007
+    host: 0.0.0.0
+  cors:
+    origin: https://probable-xylophone-5g4pg976jgrh7q4-3000.app.github.dev
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+
+organization:
+  name: Zenardi Corp
+
+techdocs:
+  builder: 'local'
+  generator:
+    runIn: 'local'
+  publisher:
+    type: 'local'
+
+catalog:
+  rules:
+    - allow: [Component, System, API, Resource, Location, Template, User, Group, Domain]
+  locations:
+    # Local example data, file locations are relative to the backend process, typically `packages/backend`
+
+    - type: file
+      target: /workspaces/backstage-v1.47.3/backstage/catalog/entities/resources.yaml
+      rules:
+        - allow: [ Resource ]
+
+    - type: file
+      target: /workspaces/backstage-v1.47.3/backstage/catalog/entities/users.yaml
+      rules:
+        - allow: [ User ]
+
+    - type: file
+      target: /workspaces/backstage-v1.47.3/backstage/catalog/entities/groups.yaml
+      rules:
+        - allow: [ Group ]
+
+    - type: file
+      target: /workspaces/backstage-v1.47.3/backstage/catalog/entities/systems.yaml
+      rules:
+        - allow: [ System ]
+
+    - type: file
+      target: /workspaces/backstage-v1.47.3/backstage/catalog/entities/domains.yaml
+      rules:
+        - allow: [ Domain ]
+
+    - type: url
+      target: https://github.com/Zenardi/backstage-software-templates/blob/main/python-app/template.yaml
+      rules:
+        - allow: [Template]
+
+    - type: url
+      target: https://github.com/Zenardi/backstage-software-templates/blob/main/react-ts-app/template.yaml
+      rules:
+        - allow: [ Template ]
+
+    - type: url
+      target: https://github.com/Zenardi/backstage-software-templates/blob/main/crossplane/aws/s3/template.yaml
+      rules:
+        - allow: [ Template ]
+
+    - type: url
+      target: https://github.com/Zenardi/backstage-software-templates/blob/main/springboot-grpc-template/template.yaml
+      rules:
+        - allow: [ Template ]
+
+    - type: url
+      target: https://github.com/Zenardi/backstage-software-templates/blob/main/crossplane/aws/eks/template.yaml
+      rules:
+        - allow: [ Template ]
+
+    - type: url
+      target: https://github.com/Zenardi/backstage-software-templates/blob/main/springboot-api/template.yaml
+      rules:
+        - allow: [ Template ]
+
+    - type: url
+      target: https://github.com/Zenardi/backstage-software-templates/blob/main/crossplane/aws/ecr/template.yaml
+      rules:
+        - allow: [ Template ]
+
+    - type: url
+      target: https://github.com/Zenardi/backstage-software-templates/blob/main/crossplane/aws/cluster-provider-config/template.yaml
+      rules:
+        - allow: [ Template ]
+
+auth:
+  environment: development
+  experimentalExtraAllowedOrigins:
+    - 'https://*.app.github.dev'
+  providers:
+    github:
+      development:
+        clientId: ${AUTH_GITHUB_CLIENT_ID}
+        clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+        signIn:
+          resolvers:
+            - resolver: usernameMatchingUserEntityName
+    microsoft:
+      development:
+        clientId: ${AUTH_MICROSOFT_CLIENT_ID}
+        clientSecret: ${AUTH_MICROSOFT_CLIENT_SECRET}
+        tenantId: ${AUTH_MICROSOFT_TENANT_ID}
+        signIn:
+          resolvers:
+            - resolver: emailMatchingUserEntityProfileEmail
+              dangerouslyAllowSignInWithoutUserInCatalog: true
+            - resolver: emailLocalPartMatchingUserEntityName
+              dangerouslyAllowSignInWithoutUserInCatalog: true
+
+costInsights:
+  engineerCost: 200000
+  products:
+    computeEngine:
+      name: Compute Engine
+      icon: compute
+    cloudStorage:
+      name: Cloud Storage
+      icon: storage
+    bigQuery:
+      name: BigQuery
+      icon: search
+  metrics:
+    DAU:
+      name: Daily Active Users
+      default: true
+    MSC:
+      name: Monthly Subscribers
+
+integrations:
+  azure:
+    - host: dev.azure.com
+      credentials:
+        - clientId: ${AZURE_APP_REGISTRATION_CLIENT_ID}
+          managedIdentityClientId: ${AZURE_MANAGED_IDENTITY_CLIENT_ID}
+          tenantId: ${AZURE_TENANT_ID}
