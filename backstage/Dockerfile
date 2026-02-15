@@ -87,7 +87,11 @@ COPY --from=build --chown=node:node /app/backstage.json ./
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--no-node-snapshot"
 
-RUN yarn workspaces focus --all --production
+# Chainguard Node image doesn't provide a global `yarn` binary, so execute the
+# project-local Yarn release dynamically to stay compatible across Yarn upgrades.
+RUN YARN_RELEASE="$(find .yarn/releases -maxdepth 1 -type f -name 'yarn-*.cjs' | sort | head -n 1)" \
+    && test -n "$YARN_RELEASE" \
+    && node "$YARN_RELEASE" workspaces focus --all --production
 
 # Copy the built backend bundle
 COPY --from=build --chown=node:node /app/packages/backend/dist/bundle.tar.gz ./
