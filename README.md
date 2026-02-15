@@ -36,12 +36,19 @@ Backstage Version: v1.47.3
       - [Summary](#summary-1)
   - [Catalog Integration (Optional)](#catalog-integration-optional)
   - [Files Modified](#files-modified)
-- [Docker Deployment](#docker-deployment)
+- [Azure DevOps Scaffolder Module](#azure-devops-scaffolder-module)
   - [Overview](#overview-2)
+  - [Prerequisites](#prerequisites)
+  - [Install and Register the Backend Module](#install-and-register-the-backend-module)
+  - [Configure Azure Integration (User-Assigned Managed Identity)](#configure-azure-integration-user-assigned-managed-identity)
+  - [Assign Permissions in Azure DevOps](#assign-permissions-in-azure-devops)
+  - [Validation](#validation)
+- [Docker Deployment](#docker-deployment)
+  - [Overview](#overview-3)
   - [Multi-Stage Dockerfile](#multi-stage-dockerfile)
-    - [Stage 1 — packages](#stage-1--packages)
-    - [Stage 2 — build](#stage-2--build)
-    - [Stage 3 — final (Chainguard)](#stage-3--final-chainguard)
+    - [Stage 1 — `packages`](#stage-1--packages)
+    - [Stage 2 — `build`](#stage-2--build)
+    - [Stage 3 — `final` (Chainguard)](#stage-3--final-chainguard)
   - [Building the Image](#building-the-image)
   - [Running the Container](#running-the-container)
   - [Files](#files)
@@ -641,6 +648,83 @@ When multiple annotations are present, the fetched cost data will match **all** 
 | `packages/app/src/components/catalog/EntityPage.tsx` | Added `EntityInfraWalletCard` to entity overview |
 | `packages/backend/src/index.ts` | Registered `@electrolux-oss/plugin-infrawallet-backend` |
 | `app-config.yaml` | Added `backend.infraWallet.integrations` for Azure and AWS |
+
+
+# Azure DevOps Scaffolder Module
+
+## Overview
+
+This project uses Backstage built-in Azure DevOps scaffolder actions from:
+
+- `@backstage/plugin-scaffolder-backend-module-azure`
+
+It is configured to authenticate with Azure DevOps using a **service principal** and a **user-assigned managed identity** to generate the client assertion.
+
+## Prerequisites
+
+Before configuring Backstage, ensure you have:
+
+1. An **App Registration** in Microsoft Entra ID.
+2. A **User-Assigned Managed Identity**.
+3. A **Federated Credential** on the App Registration that trusts the managed identity.
+4. Azure DevOps organization connected to Microsoft Entra.
+
+> [!IMPORTANT]
+> You must link your Azure DevOps organization to your Microsoft Entra directory (tenant) using the **Microsoft Entra** option in Azure DevOps. Without this link, Azure DevOps may fail to locate the service principal correctly.
+
+## Install and Register the Backend Module
+
+Install in backend workspace:
+
+```bash
+yarn --cwd backstage/packages/backend add @backstage/plugin-scaffolder-backend-module-azure
+```
+
+Register in `backstage/packages/backend/src/index.ts`:
+
+```ts
+backend.add(import('@backstage/plugin-scaffolder-backend-module-azure'));
+```
+
+## Configure Azure Integration (User-Assigned Managed Identity)
+
+Add this configuration to `app-config.yaml` or `app-config.local.yaml`:
+
+```yaml
+integrations:
+  azure:
+    - host: dev.azure.com
+      credentials:
+        - clientId: ${AZURE_APP_REGISTRATION_CLIENT_ID}
+          managedIdentityClientId: ${AZURE_MANAGED_IDENTITY_CLIENT_ID}
+          tenantId: ${AZURE_TENANT_ID}
+```
+
+Environment variables:
+
+```bash
+export AZURE_APP_REGISTRATION_CLIENT_ID=<app-registration-client-id>
+export AZURE_MANAGED_IDENTITY_CLIENT_ID=<user-assigned-managed-identity-client-id>
+export AZURE_TENANT_ID=<entra-tenant-id>
+```
+
+## Assign Permissions in Azure DevOps
+
+1. In Azure DevOps, go to **Organization Settings** → **Users**.
+2. Add the **service principal** that belongs to the App Registration (Enterprise Application in Entra ID).
+3. Assign license (`Stakeholder` or `Basic` depending on action requirements).
+4. Grant project-level permissions required by your templates (for example Repos and Pipelines).
+
+Notes:
+
+- The principal that needs Azure DevOps access is the **App Registration service principal**.
+- The managed identity is used only to generate assertions; it is not the identity to add as an Azure DevOps user.
+
+## Validation
+
+1. Restart the Backstage backend.
+2. Open **Create** in Backstage and run a template that uses Azure DevOps scaffolder actions.
+3. If authentication fails, verify tenant alignment and that the Azure DevOps organization is linked to the same Microsoft Entra directory.
 
 
 # Docker Deployment

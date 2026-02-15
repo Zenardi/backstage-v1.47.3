@@ -47,7 +47,6 @@ backend:
           accessKeyId: ${INFRAWALLET_AWS_ACCESS_KEY_ID}
           secretAccessKey: ${INFRAWALLET_AWS_SECRET_ACCESS_KEY}
 
-integrations:
   github:
     - host: github.com
       # This is a Personal Access Token or PAT from GitHub. You can find out how to generate this token, and more information
